@@ -13,3 +13,29 @@
  *= require_tree .
  *= require_self
  */
+
+@import "bootstrap";
+
+.pac-container:after{
+  content: none !important;
+}
+
+.text-field{
+  width: 100%;
+}
+#map{
+  height: 500px;
+}
+
+.hide{
+  display: none;
+}
+.margin-top-5{
+  margin-top: 5px;
+}
+.margin-left-10{
+  margin-left: 10px;
+}
+.margin-left-5{
+  margin-left: 5px;
+}

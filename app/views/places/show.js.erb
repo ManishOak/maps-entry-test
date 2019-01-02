@@ -1,0 +1,3 @@
+$(".p-details").addClass('hide')
+$(".place-<%= @place.id %>-details").html("<%= escape_javascript(render 'show') %>")
+$(".place-<%= @place.id %>-details").removeClass('hide')

@@ -1,0 +1,135 @@
+
+<div class="header text-float-left">
+  SEARCH
+<%= link_to 'PLACES', places_path, class: "btn btn-primary float-right" %>  
+</div>
+
+<hr>
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    Search For a place
+    <br>
+    <%= text_field_tag :address_autocomplete, nil, class: 'text-field', id: 'address_autocomplete', placeholder: "Type here to Search....", autocomplete: "off", required: true %><br><br>
+    <div class="map-box hide">
+      IS THIS LOCATION CORRECT?
+      <div id="map">
+      </div>
+      <hr>
+      <div class="links">
+        <%= link_to 'NO, RETRY', 'javascript:void(0)', class: "btn btn-primary", id: 'retry-btn' %>
+        <%= link_to 'YES', 'javascript:void(0)', class: "btn btn-primary margin-left-10", id: 'place-btn' %>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  var place_id, place_name, street_number, street_name, city_name, open_hours;
+  initialize = function() {
+    var autocomplete;
+    autocomplete = new google.maps.places.Autocomplete(document.getElementById('address_autocomplete'), {
+      types: ['geocode']
+    });
+    google.maps.event.addListener(autocomplete, 'place_changed', function() {
+      var place;
+      place = autocomplete.getPlace();
+      initializeMap(place)
+    });
+  };
+
+  setTimeout((function() {
+    initialize();
+  }), 500);
+
+  var initializeMap = function(place) {
+    var markers = [],
+        iconURLPrefix = 'http://maps.google.com/mapfiles/ms/icons/',
+        icons = ([iconURLPrefix + 'red-dot.png']),
+        lat = place.geometry.location.lat(),
+        lng = place.geometry.location.lng(),
+        locations = [[lat, lng]],
+        autoCenter;
+    var drawMap = function(id, locations){
+      var map = new google.maps.Map(document.getElementById(id), {
+        zoom: 6,
+        center: new google.maps.LatLng(locations[0][0], locations[0][0]),
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: false,
+        streetViewControl: false,
+        panControl: false,
+        zoomControlOptions: {
+          position: google.maps.ControlPosition.LEFT_BOTTOM
+        }
+      });
+      return map;
+    }
+
+    if ((locations.length > 0) && ($("#map").length > 0)){
+      var map = drawMap('map', locations);
+      autoCenter = function() {
+        var bounds, i;
+        bounds = new google.maps.LatLngBounds;
+        i = 0;
+        while (i < markers.length) {
+          bounds.extend(markers[i].position);
+          i++;
+        }
+        map.fitBounds(bounds);
+      };
+
+      var addressMarker = new google.maps.Marker({
+          position: new google.maps.LatLng(locations[0][0], locations[0][1]),
+          map: map,
+          icon: icons[0]
+        });
+      addressMarker.set("type", "address");
+      markers.push(addressMarker);
+      autoCenter();
+    }
+    $('.map-box').removeClass('hide')
+    place_id = place.place_id;
+    place_name = place.name;
+    try{
+      open_hours = place.opening_hours.periods[1].open.time;
+    }
+    catch(e){
+      open_hours = ['No work time'];
+    }
+    // $.each(place.address_components, function(i, address_component) {
+    //   var city, street, street_no, open_hrs;
+    //   if (address_component.types[0] === 'locality' || address_component.types[0] === 'neighborhood' || address_component.types[0] === 'administrative_area_level_3') {
+    //     city = address_component.long_name;
+    //   }
+    //   if (address_component.types[0] === 'administrative_area_level_1') {
+    //     state_name = address_component.long_name;
+    //     state_code = address_component.short_name;
+    //   }
+    //   if (address_component.types[0] === 'postal_code') {
+    //     return postal_code = address_component.long_name;
+    //   }
+    // });
+  }
+
+  $(document).on("click", "#retry-btn", function () {
+    $('.map-box').addClass('hide')
+    $('#address_autocomplete').val('').focus()
+    place_id = place_name = street_name = street_number = city_name = open_hours = undefined
+  });
+
+  $(document).off('click', '#place-btn')
+
+  $(document).on("click", "#place-btn", function () {
+    $.ajax({
+      url: "/places",
+      method: 'POST',
+      data: {
+            google_id: place_id,
+            place_name: place_name,
+            street_name: street_name,
+            street_number: street_number,
+            city_name: city_name,
+            open_hours: open_hours
+      }
+    })
+  });
+</script>

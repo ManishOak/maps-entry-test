@@ -1,0 +1,22 @@
+<div class="header text-float-left">
+  PLACES
+  <%= link_to 'SEARCH', root_path, class: 'btn btn-primary float-right' %>
+</div>
+<hr>
+<div>
+  <h3>List of Added Places</h3>
+  <% @places.all.each do |place| %>
+    <div class="row margin-left-5">    
+      <div class="margin-top-5">
+        <%= link_to place_path(place), remote: true do %>
+          <%= place.name %>
+          <br>
+          <%= place.address %>
+          <br>
+        <% end %>
+        <div class="p-details place-<%=  place.id%>-details hide"></div>
+      </div>
+    </div>
+    <hr>
+  <% end %>
+</div>
